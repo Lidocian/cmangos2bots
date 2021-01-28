@@ -31,8 +31,8 @@
 #include "Maps/MapManager.h"
 #include "Maps/MapPersistentStateMgr.h"
 #include "Spells/SpellAuras.h"
-#include "LFGMgr.h"
-#include "LFG.h"
+#include "LFG/LFG.h"
+#include "LFG/LFGMgr.h"
 #ifdef BUILD_PLAYERBOT
 #include "PlayerBot/Base/PlayerbotMgr.h"
 #include "Config/Config.h"
@@ -209,7 +209,7 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFG
 
     member.group     = subgroup;
     member.assistant = assistant;
-    member.flags = flags;
+   // member.flags = flags;
     member.roles = roles;
 
     int32 lastMap = sObjectMgr.GetPlayerMapIdByGUID(member.guid);

@@ -20,7 +20,7 @@
 #define _LFGMGR_H
 
 #include "Common.h"
-#include "ObjectGuid.h"
+#include "Entities/ObjectGuid.h"
 #include "Policies/Singleton.h"
 #include <boost/thread/mutex.hpp>
 #include "LFG.h"

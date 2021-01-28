@@ -31,8 +31,8 @@
 #include "Entities/Item.h"
 #include "Server/WorldSocket.h"
 #include "Multithreading/Messager.h"
-#include "LFG.h"
-#include "LFGMgr.h"
+#include "LFG/LFG.h"
+#include "LFG/LFGMgr.h"
 
 #include <deque>
 #include <mutex>
