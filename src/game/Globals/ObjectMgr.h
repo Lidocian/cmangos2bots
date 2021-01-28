@@ -519,6 +519,7 @@ class ObjectMgr
 
         void PackGroupIds();
         Group* GetGroupById(uint32 id) const;
+        Group* GetGroup(ObjectGuid guid) const;
         void AddGroup(Group* group);
         void RemoveGroup(Group* group);
         GroupMap::iterator GetGroupMapBegin() { return mGroupMap.begin(); }

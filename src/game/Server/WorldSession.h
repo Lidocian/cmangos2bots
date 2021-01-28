@@ -875,17 +875,50 @@ class WorldSession
         void HandleSetDungeonDifficultyOpcode(WorldPacket& recv_data);
         void HandleSetRaidDifficultyOpcode(WorldPacket& recv_data);
         void HandleMoveSetCanFlyAckOpcode(WorldPacket& recv_data);
-        void HandleLfgJoinOpcode(WorldPacket& recv_data);
-        void HandleLfgLeaveOpcode(WorldPacket& recv_data);
-        void HandleSearchLfgJoinOpcode(WorldPacket& recv_data);
-        void HandleSearchLfgLeaveOpcode(WorldPacket& recv_data);
-        void HandleSetLfgCommentOpcode(WorldPacket& recv_data);
+        //void HandleLfgJoinOpcode(WorldPacket& recv_data);
+       // void HandleLfgLeaveOpcode(WorldPacket& recv_data);
+        //void HandleSearchLfgJoinOpcode(WorldPacket& recv_data);
+        //void HandleSearchLfgLeaveOpcode(WorldPacket& recv_data);
+        //void HandleSetLfgCommentOpcode(WorldPacket& recv_data);
         void HandleSetTitleOpcode(WorldPacket& recv_data);
         void HandleRealmSplitOpcode(WorldPacket& recv_data);
         void HandleTimeSyncResp(WorldPacket& recv_data);
         void HandleWhoisOpcode(WorldPacket& recv_data);
         void HandleResetInstancesOpcode(WorldPacket& recv_data);
         void HandleHearthandResurrect(WorldPacket& recv_data);
+
+        // LFG
+        void HandleLfgJoinOpcode(WorldPacket& recv_data);
+        void HandleLfgLeaveOpcode(WorldPacket& recv_data);
+        void HandleLfgClearOpcode(WorldPacket& recv_data);
+        void HandleSetLfgCommentOpcode(WorldPacket& recv_data);
+        void HandleLfgSetRolesOpcode(WorldPacket& recv_data);
+        void HandleLfgGetStatus(WorldPacket& recv_data);
+        //
+        void HandleLfgSetBootVoteOpcode(WorldPacket& recv_data);
+        void HandleLfgProposalResultOpcode(WorldPacket& recv_data);
+        void HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recv_data);
+        void HandleLfgTeleportOpcode(WorldPacket& recv_data);
+        void HandleLfgPartyLockInfoRequestOpcode(WorldPacket& recv_data);
+        // send data
+        void SendLfgUpdatePlayer(LFGUpdateType updateType, LFGType type);
+        void SendLfgUpdateParty(LFGUpdateType updateType, LFGType type);
+        void SendLfgUpdateSearch(bool update);
+        void SendLfgJoinResult(LFGJoinResult checkResult, uint8 checkValue = 0, bool withLockMap = false);
+        void SendLfgPlayerReward(LFGDungeonEntry const* dungeon, const LFGReward* reward, const Quest* qRew, bool isSecond = false);
+        void SendLfgQueueStatus(LFGDungeonEntry const* dungeon, LFGQueueStatus* status);
+        void SendLfgRoleChosen(ObjectGuid guid, uint8 roles);
+        void SendLfgRoleCheckUpdate();
+        void SendLfgBootPlayer();
+        void SendLfgUpdateProposal(LFGProposal* proposal);
+        void SendLfgOfferContinue(LFGDungeonEntry const* dungeon);
+        void SendLfgTeleportError(LFGTeleportError msg);
+        // LFR
+        void HandleLfrSearchOpcode(WorldPacket& recv_data);
+        void HandleLfrLeaveOpcode(WorldPacket& recv_data);
+        // send data
+        void SendLfgUpdateList(uint32 dungeonID);
+        void SendLfgDisabled();
 
         // Arena Team
         void HandleInspectArenaTeamsOpcode(WorldPacket& recv_data);

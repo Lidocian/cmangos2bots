@@ -27,6 +27,7 @@
 #include "Battlefield/Battlefield.h"
 #include "Server/DBCEnums.h"
 #include "Globals/SharedDefines.h"
+#include "LFG.h"
 
 struct ItemPrototype;
 
@@ -65,8 +66,10 @@ enum GroupType                                              // group type flags?
     GROUPTYPE_RAID   = 0x02,
     GROUPTYPE_BGRAID = GROUPTYPE_BG | GROUPTYPE_RAID,       // mask
     // 0x04?
+    GROUPTYPE_UNK1 = 0x04,
     GROUPTYPE_LFD    = 0x08,
     // 0x10, leave/change group?, I saw this flag when leaving group and after leaving BG while in group
+    GROUPTYPE_UNK2 = 0x10,
 };
 
 enum GroupFlagMask
@@ -127,6 +130,7 @@ class Group
             std::string name;
             uint8       group;
             bool        assistant;
+            LFGRoleMask roles;
             uint32      lastMap;
         };
         typedef std::list<MemberSlot> MemberSlotList;
@@ -144,7 +148,7 @@ class Group
         // group manipulation methods
         bool   Create(ObjectGuid guid, const char* name);
         bool   LoadGroupFromDB(Field* fields);
-        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
+        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFGRoleMask roles);
         bool   AddInvite(Player* player);
         uint32 RemoveInvite(Player* player);
         void   RemoveAllInvites();
@@ -290,6 +294,16 @@ class Group
         InstanceGroupBind* GetBoundInstance(uint32 mapid);
         InstanceGroupBind* GetBoundInstance(Map* aMap, Difficulty difficulty);
         BoundInstancesMap& GetBoundInstances(Difficulty difficulty) { return m_boundInstances[difficulty]; }
+
+        // LFG
+        bool ConvertToLFG(LFGType type);
+        bool isLFDGroup()  const { return m_groupType & GROUPTYPE_LFD; }
+        bool isLFGGroup()  const { return ((m_groupType & GROUPTYPE_LFD) && !(m_groupType & GROUPTYPE_RAID)); }
+        bool isLFRGroup()  const { return ((m_groupType & GROUPTYPE_LFD) && (m_groupType & GROUPTYPE_RAID)); }
+        void SetGroupRoles(ObjectGuid guid, LFGRoleMask roles);
+        LFGRoleMask GetGroupRoles(ObjectGuid guid);
+        bool IsNeedSave() const;
+        GroupType GetGroupType() const { return m_groupType; };
 
 #ifdef ENABLE_PLAYERBOTS
         ObjectGuid GetTargetIcon(int index) { return m_targetIcons[index]; }

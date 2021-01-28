@@ -568,6 +568,16 @@ void World::LoadConfigSettings(bool reload)
     setConfigMinMax(CONFIG_UINT32_START_PLAYER_LEVEL, "StartPlayerLevel", 1, 1, getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL));
     setConfigMinMax(CONFIG_UINT32_START_HEROIC_PLAYER_LEVEL, "StartHeroicPlayerLevel", 55, 1, getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL));
 
+    // Dungeon Finder
+    setConfig(CONFIG_BOOL_LFG_ENABLE, "LFG.Enable", false);
+    setConfig(CONFIG_BOOL_LFR_ENABLE, "LFR.Enable", false);
+    setConfig(CONFIG_BOOL_LFG_DEBUG_ENABLE, "LFG.Debug", false);
+    setConfig(CONFIG_BOOL_LFR_EXTEND, "LFR.Extend", false);
+    setConfig(CONFIG_BOOL_LFG_ONLYLASTENCOUNTER, "LFG.OnlyLastEncounterForCompleteDungeon", false);
+    setConfigMinMax(CONFIG_UINT32_LFG_MAXKICKS, "LFG.MaxKicks", 5, 1, 10);
+    std::string disabledMapIdForLFG = sConfig.GetStringDefault("LFG.DisableDungeonMapIds", "");
+    setDisabledMapIdForDungeonFinder(disabledMapIdForLFG.c_str());
+
     setConfigMinMax(CONFIG_UINT32_START_PLAYER_MONEY, "StartPlayerMoney", 0, 0, MAX_MONEY_AMOUNT);
 
     setConfig(CONFIG_UINT32_MAX_HONOR_POINTS, "MaxHonorPoints", 75000);
@@ -2735,6 +2745,23 @@ void World::InvalidatePlayerDataToAllClient(ObjectGuid guid) const
     WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
     data << guid;
     SendGlobalMessage(data);
+}
+
+// Dungeonfinder
+void World::setDisabledMapIdForDungeonFinder(const char* mapIds)
+{
+    disabledMapIdForDungeonFinder.clear();
+
+    Tokens disabledMapId(mapIds, ',');
+    for (Tokens::iterator it = disabledMapId.begin(); it != disabledMapId.end(); ++it)
+    {
+        disabledMapIdForDungeonFinder.insert(atoi(*it));
+    }
+}
+
+bool World::IsDungeonMapIdDisable(uint32 mapId)
+{
+    return disabledMapIdForDungeonFinder.find(mapId) != disabledMapIdForDungeonFinder.end();
 }
 
 void World::IncrementOpcodeCounter(uint32 opcodeId)

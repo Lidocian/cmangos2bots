@@ -5419,6 +5419,18 @@ void Player::LeaveLFGChannel()
     }
 }
 
+void Player::JoinLFGChannel()
+{
+    for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
+    {
+        if ((*i)->IsLFG())
+        {
+            (*i)->Join(this, "");
+            break;
+        }
+    }
+}
+
 void Player::UpdateDefense()
 {
     uint32 defense_skill_gain = sWorld.getConfig(CONFIG_UINT32_SKILL_GAIN_DEFENSE);
@@ -24375,6 +24387,11 @@ AreaLockStatus Player::GetAreaTriggerLockStatus(AreaTrigger const* at, Difficult
     }
 
     return AREA_LOCKSTATUS_OK;
+};
+
+AreaLockStatus Player::GetAreaLockStatus(uint32 mapId, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false)
+{
+    return GetAreaTriggerLockStatus(sObjectMgr.GetMapEntranceTrigger(mapId), difficulty, miscRequirement, forceAllChecks);
 };
 
 float Player::ComputeRest(time_t timePassed, bool offline /*= false*/, bool inRestPlace /*= false*/) const

@@ -199,6 +199,15 @@ Group* ObjectMgr::GetGroupById(uint32 id) const
     return nullptr;
 }
 
+Group* ObjectMgr::GetGroup(ObjectGuid guid) const
+{
+    GroupMap::const_iterator itr = mGroupMap.find(guid);
+    if (itr != mGroupMap.end())
+        return itr->second;
+
+    return NULL;
+}
+
 ArenaTeam* ObjectMgr::GetArenaTeamById(uint32 arenateamid) const
 {
     ArenaTeamMap::const_iterator itr = mArenaTeamMap.find(arenateamid);

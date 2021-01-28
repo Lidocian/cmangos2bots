@@ -31,6 +31,8 @@
 #include "Maps/MapManager.h"
 #include "Maps/MapPersistentStateMgr.h"
 #include "Spells/SpellAuras.h"
+#include "LFGMgr.h"
+#include "LFG.h"
 #ifdef BUILD_PLAYERBOT
 #include "PlayerBot/Base/PlayerbotMgr.h"
 #include "Config/Config.h"
@@ -196,7 +198,7 @@ bool Group::LoadGroupFromDB(Field* fields)
     return true;
 }
 
-bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
+bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFGRoleMask roles)
 {
     MemberSlot member;
     member.guid      = ObjectGuid(HIGHGUID_PLAYER, guidLow);
@@ -207,6 +209,8 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
 
     member.group     = subgroup;
     member.assistant = assistant;
+    member.flags = flags;
+    member.roles = roles;
 
     int32 lastMap = sObjectMgr.GetPlayerMapIdByGUID(member.guid);
     if (lastMap < 0)
@@ -1628,3 +1632,84 @@ void Group::RewardGroupAtKill(Unit* pVictim, Player* player_tap)
         }
     }
 }
+
+bool Group::ConvertToLFG(LFGType type)
+{
+    if (isBattleGroup())
+        return false;
+
+    switch (type)
+    {
+    case LFG_TYPE_DUNGEON:
+    case LFG_TYPE_QUEST:
+    case LFG_TYPE_ZONE:
+    case LFG_TYPE_HEROIC_DUNGEON:
+        if (isRaidGroup())
+            return false;
+        m_groupType = GroupType(m_groupType | GROUPTYPE_LFD);
+        break;
+    case LFG_TYPE_RANDOM_DUNGEON:
+        if (isRaidGroup())
+            return false;
+        m_groupType = GroupType(m_groupType | GROUPTYPE_LFD | GROUPTYPE_UNK1);
+        break;
+    case LFG_TYPE_RAID:
+        if (!isRaidGroup())
+            ConvertToRaid();
+        m_groupType = GroupType(m_groupType | GROUPTYPE_LFD);
+        break;
+    default:
+        return false;
+    }
+
+    m_lootMethod = NEED_BEFORE_GREED;
+    SendUpdate();
+
+    if (IsNeedSave())
+    {
+        static SqlStatementID updGroup;
+        CharacterDatabase.CreateStatement(updGroup, "UPDATE groups SET groupType = ? WHERE groupId = ?")
+            .PExecute(uint8(m_groupType), GetObjectGuid().GetCounter());
+    }
+    return true;
+}
+
+void Group::SetGroupRoles(ObjectGuid guid, LFGRoleMask roles)
+{
+    for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+    {
+        if (itr->guid == guid)
+        {
+            itr->roles = roles;
+
+            if (IsNeedSave())
+            {
+                static SqlStatementID updGroupMember;
+                CharacterDatabase.CreateStatement(updGroupMember, "UPDATE group_member SET roles = ? WHERE memberGuid = ?")
+                    .PExecute(uint8(itr->roles), itr->guid.GetCounter());
+            }
+
+            SendUpdate();
+            return;
+        }
+    }
+}
+
+LFGRoleMask Group::GetGroupRoles(ObjectGuid guid)
+{
+    for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+    {
+        if (itr->guid == guid)
+            return itr->roles;
+    }
+    return LFG_ROLE_MASK_NONE;
+}
+
+bool Group::IsNeedSave() const
+{
+    if (GetGroupType() & GROUPTYPE_BG)
+        return false;
+
+    return m_bgGroup == NULL;
+}
+

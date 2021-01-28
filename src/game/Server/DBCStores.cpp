@@ -140,6 +140,10 @@ DBCStorage <LightEntry> sLightStore(LightEntryfmt);
 DBCStorage <LiquidTypeEntry> sLiquidTypeStore(LiquidTypefmt);
 DBCStorage <LockEntry> sLockStore(LockEntryfmt);
 
+DBCStorage <LFGDungeonEntry> sLFGDungeonStore(LFGDungeonEntryfmt);
+DBCStorage <LFGDungeonExpansionEntry> sLFGDungeonExpansionStore(LFGDungeonExpansionEntryfmt);
+LFGDungeonExpansionMap sLFGDungeonExpansionMap;
+
 DBCStorage <MailTemplateEntry> sMailTemplateStore(MailTemplateEntryfmt);
 DBCStorage <MapEntry> sMapStore(MapEntryfmt);
 
@@ -490,6 +494,14 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemStore,                dbcPath, "Item.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemBagFamilyStore,       dbcPath, "ItemBagFamily.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemClassStore,           dbcPath, "ItemClass.dbc");
+    LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLFGDungeonStore, dbcPath, "LFGDungeons.dbc");
+    LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLFGDungeonExpansionStore, dbcPath, "LFGDungeonExpansion.dbc");
+    // fill data
+    for (uint32 i = 1; i < sLFGDungeonExpansionStore.GetNumRows(); ++i)
+    {
+        if (LFGDungeonExpansionEntry const* entry = sLFGDungeonExpansionStore.LookupEntry(i))
+            sLFGDungeonExpansionMap[MAKE_PAIR32(entry->dungeonID, entry->expansion)] = entry;
+    }
     // LoadDBC(availableDbcLocales,bar,bad_dbc_files,sItemDisplayInfoStore,     dbcPath,"ItemDisplayInfo.dbc");     -- not used currently
     // LoadDBC(availableDbcLocales,bar,bad_dbc_files,sItemCondExtCostsStore,    dbcPath,"ItemCondExtCosts.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemExtendedCostStore,    dbcPath, "ItemExtendedCost.dbc");

@@ -1928,6 +1928,7 @@ class Player : public Unit
         void CleanupChannels();
         void UpdateLocalChannels(uint32 newZone);
         void LeaveLFGChannel();
+        void JoinLFGChannel();
 
         void UpdateDefense();
         void UpdateWeaponSkill(WeaponAttackType attType);
@@ -2356,6 +2357,7 @@ class Player : public Unit
         static void ConvertInstancesToGroup(Player* player, Group* group = nullptr, ObjectGuid player_guid = ObjectGuid());
         DungeonPersistentState* GetBoundInstanceSaveForSelfOrGroup(uint32 mapid);
 
+        AreaLockStatus GetAreaLockStatus(uint32 mapId, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false);
         AreaLockStatus GetAreaTriggerLockStatus(AreaTrigger const* at, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false);
         void SendTransferAbortedByLockStatus(MapEntry const* mapEntry, AreaLockStatus lockStatus, uint32 miscRequirement = 0) const;
 

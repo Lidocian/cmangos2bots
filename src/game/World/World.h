@@ -213,6 +213,7 @@ enum eConfigUInt32Values
     CONFIG_UINT32_FOGOFWAR_STATS,
     CONFIG_UINT32_CREATURE_PICKPOCKET_RESTOCK_DELAY,
     CONFIG_UINT32_CHANNEL_STATIC_AUTO_TRESHOLD,
+    CONFIG_UINT32_LFG_MAXKICKS,
     CONFIG_UINT32_VALUE_COUNT
 };
 
@@ -379,7 +380,12 @@ enum eConfigBoolValues
     CONFIG_BOOL_AUTOLOAD_ACTIVE,
     CONFIG_BOOL_PATH_FIND_OPTIMIZE,
     CONFIG_BOOL_PATH_FIND_NORMALIZE_Z,
-    CONFIG_BOOL_VALUE_COUNT
+    CONFIG_BOOL_VALUE_COUNT,
+    CONFIG_BOOL_LFG_ENABLE,
+    CONFIG_BOOL_LFR_ENABLE,
+    CONFIG_BOOL_LFG_DEBUG_ENABLE,
+    CONFIG_BOOL_LFR_EXTEND,
+    CONFIG_BOOL_LFG_ONLYLASTENCOUNTER
 };
 
 /// Can be used in SMSG_AUTH_RESPONSE packet
@@ -635,6 +641,10 @@ class World
         char const* GetCreatureEventAIVersion() const { return m_CreatureEventAIVersion.c_str(); }
 
         std::vector<std::string> GetSpamRecords() const { return m_spamRecords; }
+
+        // Disable dungeons for LFG system
+        void setDisabledMapIdForDungeonFinder(const char* areas);
+        bool IsDungeonMapIdDisable(uint32 mapId);
 
         /**
         * \brief: force all client to request player data
