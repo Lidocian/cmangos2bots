@@ -180,7 +180,7 @@ enum LfgUpdateType
     LFG_UPDATE_LEAVE    = 7,
 };
 
-enum LfgType
+/*enum LfgType
 {
     LFG_TYPE_NONE                 = 0,
     LFG_TYPE_DUNGEON              = 1,
@@ -189,7 +189,7 @@ enum LfgType
     LFG_TYPE_ZONE                 = 4,
     LFG_TYPE_HEROIC_DUNGEON       = 5,
     LFG_TYPE_RANDOM_DUNGEON       = 6
-};
+};*/
 
 enum ChatRestrictionType
 {
