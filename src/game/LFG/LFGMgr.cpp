@@ -22,11 +22,13 @@
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
 #include "SocialMgr.h"
+#include "LFG.h"
 #include "LFGMgr.h"
 #include "World.h"
 #include "Group.h"
 #include "Player.h"
 #include "GameEventMgr.h"
+
 
 #include <limits>
 
@@ -313,7 +315,7 @@ void LFGMgr::Join(Player* pPlayer)
         }
         else
         {
-            pPlayer->GetSession()->SendLfgJoinResult(ERR_LFG_NO_LFG_OBJECT);
+            pPlayer->GetSession()->SendLfgJoinResult(ERR_LFG_NO_LFG_OBJECT, 0 ,false);
             RemoveFromQueue(guid);
             return;
         }

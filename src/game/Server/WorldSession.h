@@ -31,6 +31,8 @@
 #include "Entities/Item.h"
 #include "Server/WorldSocket.h"
 #include "Multithreading/Messager.h"
+#include "LFG.h"
+#include "LFGMgr.h"
 
 #include <deque>
 #include <mutex>
@@ -149,7 +151,7 @@ enum PartyResult
     ERR_PARTY_LFG_BOOT_LOOT_ROLLS       = 29,
     ERR_PARTY_LFG_TELEPORT_IN_COMBAT    = 30
 };
-
+/*
 enum LfgJoinResult
 {
     ERR_LFG_OK                                  = 0x00,
@@ -170,7 +172,7 @@ enum LfgJoinResult
     ERR_LFG_TOO_MANY_MEMBERS                    = 0x10,
     ERR_LFG_CANT_USE_DUNGEONS                   = 0x11,
     ERR_LFG_ROLE_CHECK_FAILED2                  = 0x12,
-};
+};*/
 
 enum LfgUpdateType
 {
@@ -303,9 +305,9 @@ class WorldSession
         void SendNotification(const char* format, ...) const ATTR_PRINTF(2, 3);
         void SendNotification(int32 string_id, ...) const;
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName* declinedName) const;
-        void SendLfgSearchResults(LfgType type, uint32 entry) const;
-        void SendLfgJoinResult(LfgJoinResult result) const;
-        void SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 id) const;
+        //void SendLfgSearchResults(LfgType type, uint32 entry) const;
+        //void SendLfgJoinResult(LfgJoinResult result) const;
+        //void SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 id) const;
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res) const;
         void SendGroupInvite(Player* player, bool alreadyInGroup = false) const;
         void SendAreaTriggerMessage(const char* Text, ...) const ATTR_PRINTF(2, 3);
