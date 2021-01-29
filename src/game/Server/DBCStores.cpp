@@ -1010,6 +1010,12 @@ MapDifficultyEntry const* GetMapDifficultyData(uint32 mapId, Difficulty difficul
     return itr != sMapDifficultyMap.end() ? itr->second : nullptr;
 }
 
+LFGDungeonExpansionEntry const* GetLFGExpansionEntry(uint32 dungeonId, uint32 expansion)
+{
+    LFGDungeonExpansionMap::const_iterator itr = sLFGDungeonExpansionMap.find(MAKE_PAIR32(dungeonId, expansion));
+    return itr != sLFGDungeonExpansionMap.end() ? itr->second : NULL;
+}
+
 PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level)
 {
     PvPDifficultyEntry const* maxEntry = nullptr;              // used for level > max listed level case

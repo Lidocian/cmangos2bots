@@ -4002,6 +4002,7 @@ void ObjectMgr::LoadGroups()
             bool   assistent     = fields[1].GetBool();
             uint8  subgroup      = fields[2].GetUInt8();
             uint32 groupId       = fields[3].GetUInt32();
+            uint8  roles         = fields[4].GetUInt8();
             if (!group || group->GetId() != groupId)
             {
                 group = GetGroupById(groupId);
@@ -4014,7 +4015,7 @@ void ObjectMgr::LoadGroups()
                 }
             }
 
-            if (!group->LoadMemberFromDB(memberGuidlow, subgroup, assistent))
+            if (!group->LoadMemberFromDB(memberGuidlow, subgroup, assistent, LFGRoleMask(roles)))
             {
                 sLog.outErrorDb("Incorrect entry in group_member table : member %s cannot be added to group (Id: %u)!",
                                 memberGuid.GetString().c_str(), groupId);

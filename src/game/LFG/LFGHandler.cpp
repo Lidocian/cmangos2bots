@@ -25,6 +25,8 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "LFGMgr.h"
+#include "Quests/QuestDef.h"
+
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recv_data)
 {

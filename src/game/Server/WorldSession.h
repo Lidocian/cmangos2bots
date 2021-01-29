@@ -33,6 +33,7 @@
 #include "Multithreading/Messager.h"
 #include "LFG/LFG.h"
 #include "LFG/LFGMgr.h"
+#include "Quests/QuestDef.h"
 
 #include <deque>
 #include <mutex>

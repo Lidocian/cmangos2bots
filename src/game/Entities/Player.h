@@ -2358,6 +2358,7 @@ class Player : public Unit
         DungeonPersistentState* GetBoundInstanceSaveForSelfOrGroup(uint32 mapid);
 
         AreaLockStatus GetAreaLockStatus(uint32 mapId, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false);
+        uint8 GetTalentsCount(uint8 tab);
         AreaLockStatus GetAreaTriggerLockStatus(AreaTrigger const* at, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false);
         void SendTransferAbortedByLockStatus(MapEntry const* mapEntry, AreaLockStatus lockStatus, uint32 miscRequirement = 0) const;
 
@@ -2827,6 +2828,8 @@ class Player : public Unit
         ReputationMgr  m_reputationMgr;
 
         uint32 m_cachedGS;
+
+        uint8  m_cachedTC[3];
 
         bool m_isGhouled;
 

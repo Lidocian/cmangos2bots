@@ -209,7 +209,6 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFG
 
     member.group     = subgroup;
     member.assistant = assistant;
-   // member.flags = flags;
     member.roles = roles;
 
     int32 lastMap = sObjectMgr.GetPlayerMapIdByGUID(member.guid);

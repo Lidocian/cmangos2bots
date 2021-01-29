@@ -24389,10 +24389,41 @@ AreaLockStatus Player::GetAreaTriggerLockStatus(AreaTrigger const* at, Difficult
     return AREA_LOCKSTATUS_OK;
 };
 
-AreaLockStatus Player::GetAreaLockStatus(uint32 mapId, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks = false)
+AreaLockStatus Player::GetAreaLockStatus(uint32 mapId, Difficulty difficulty, uint32& miscRequirement, bool forceAllChecks)
 {
     return GetAreaTriggerLockStatus(sObjectMgr.GetMapEntranceTrigger(mapId), difficulty, miscRequirement, forceAllChecks);
 };
+
+uint8 Player::GetTalentsCount(uint8 tab)
+{
+    if (tab > 2)
+        return 0;
+
+    if (m_cachedTC[tab] > 0)
+        return m_cachedTC[tab];
+
+    uint8 talentCount = 0;
+
+    uint32 const* talentTabIds = GetTalentTabPages(getClass());
+
+    uint32 talentTabId = talentTabIds[tab];
+
+    for (PlayerTalentMap::iterator iter = m_talents[m_activeSpec].begin(); iter != m_talents[m_activeSpec].end(); ++iter)
+    {
+        PlayerTalent talent = (*iter).second;
+
+        if (talent.state == PLAYERSPELL_REMOVED)
+            continue;
+
+        // skip another tab talents
+        if (talent.talentEntry->TalentTab != talentTabId)
+            continue;
+
+        talentCount += talent.currentRank + 1;
+    }
+    m_cachedTC[tab] = talentCount;
+    return talentCount;
+}
 
 float Player::ComputeRest(time_t timePassed, bool offline /*= false*/, bool inRestPlace /*= false*/) const
 {

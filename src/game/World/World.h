@@ -770,6 +770,9 @@ class World
         std::string m_DBVersion;
         std::string m_CreatureEventAIVersion;
 
+        // Disable dungeons for LFG system
+        std::set<uint32> disabledMapIdForDungeonFinder; // set of MapIds which are disabled for DungeonFinder
+
         // List of Maps that should be force-loaded on startup
         std::set<uint32> m_configForceLoadMapIds;
 

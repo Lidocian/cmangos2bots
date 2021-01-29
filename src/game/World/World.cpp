@@ -2748,14 +2748,26 @@ void World::InvalidatePlayerDataToAllClient(ObjectGuid guid) const
 }
 
 // Dungeonfinder
+/*void World::setDisabledMapIdForDungeonFinder(const char* mapIds)
+{
+    disabledMapIdForDungeonFinder.clear();
+    Tokens disabledMapId = StrSplit(mapIds, ",");
+    //Tokens disabledMapId(mapIds, ',');
+    for (Tokens::iterator it = disabledMapId.begin(); it != disabledMapId.end(); ++it)
+    {
+        disabledMapIdForDungeonFinder.insert(stoi(*it));
+    }
+}*/
+
+// Dungeonfinder
 void World::setDisabledMapIdForDungeonFinder(const char* mapIds)
 {
     disabledMapIdForDungeonFinder.clear();
 
-    Tokens disabledMapId(mapIds, ',');
+    Tokens disabledMapId = StrSplit(mapIds, ",");
     for (Tokens::iterator it = disabledMapId.begin(); it != disabledMapId.end(); ++it)
     {
-        disabledMapIdForDungeonFinder.insert(atoi(*it));
+        disabledMapIdForDungeonFinder.insert(stoi(*it));
     }
 }
 
