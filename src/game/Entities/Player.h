@@ -952,6 +952,8 @@ struct BGData
     WorldLocation joinPos;                                  ///< From where player entered BG, saved
 
     bool m_needSave;                                        ///< true, if saved to DB fields modified after prev. save (marked as "saved" above)
+
+    bool forLFG;                                            // true, if data used for LFG entry point set (fields modified after prev. save (instanceID = 0!)
 };
 
 struct TradeStatusInfo
@@ -2191,7 +2193,8 @@ class Player : public Unit
         }
 
         WorldLocation const& GetBattleGroundEntryPoint() const { return m_bgData.joinPos; }
-        void SetBattleGroundEntryPoint();
+        //void SetBattleGroundEntryPoint();
+        void SetBattleGroundEntryPoint(bool forLFG = false);
 
         void SetBGTeam(Team team) { m_bgData.bgTeam = team; m_bgData.m_needSave = true; }
         Team GetBGTeam() const { return m_bgData.bgTeam ? m_bgData.bgTeam : GetTeam(); }

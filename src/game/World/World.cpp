@@ -793,7 +793,8 @@ void World::LoadConfigSettings(bool reload)
 
     setConfig(CONFIG_UINT32_INSTANT_LOGOUT, "InstantLogout", SEC_MODERATOR);
 
-    setConfigMin(CONFIG_UINT32_GROUP_OFFLINE_LEADER_DELAY, "Group.OfflineLeaderDelay", 300, 0);
+    //setConfigMin(CONFIG_UINT32_GROUP_OFFLINE_LEADER_DELAY, "Group.OfflineLeaderDelay", 300, 0);
+    setConfig(CONFIG_UINT32_GROUP_OFFLINE_LEADER_DELAY, "Group.OfflineLeaderDelay", 300);
 
     setConfigMin(CONFIG_UINT32_GUILD_EVENT_LOG_COUNT, "Guild.EventLogRecordsCount", GUILD_EVENTLOG_MAX_RECORDS, GUILD_EVENTLOG_MAX_RECORDS);
     setConfigMin(CONFIG_UINT32_GUILD_BANK_EVENT_LOG_COUNT, "Guild.BankEventLogRecordsCount", GUILD_BANK_MAX_LOGS, GUILD_BANK_MAX_LOGS);
@@ -806,6 +807,8 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_PET_ATTACK_FROM_BEHIND,     "PetAttackFromBehind", true);
 
     setConfig(CONFIG_BOOL_AUTO_DOWNRANK,              "AutoDownrank", true);
+
+    setConfig(CONFIG_BOOL_RAID_FLAGS_UNIQUE, "RaidFlags.Unique", false);
 
     m_relocation_ai_notify_delay = sConfig.GetIntDefault("Visibility.AIRelocationNotifyDelay", 1000u);
     m_relocation_lower_limit_sq = pow(sConfig.GetFloatDefault("Visibility.RelocationLowerLimit", 10), 2);
@@ -1343,6 +1346,9 @@ void World::SetInitialWorldSettings()
     sLog.outString(">>> Localization strings loaded");
     sLog.outString();
 
+    sLog.outString("Loading LFG rewards...");               // After load all static data
+    sLFGMgr.LoadRewards();
+
     ///- Load dynamic data tables from the database
     sLog.outString("Loading Auctions...");
     sAuctionMgr.LoadAuctionItems();
@@ -1673,6 +1679,9 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_DELETECHARS].Reset();
         Player::DeleteOldCharacters();
     }
+
+    // Check if any group can be created by dungeon finder
+    sLFGMgr.Update(diff);
 
     // execute callbacks from sql queries that were queued recently
     UpdateResultQueue();
@@ -2746,18 +2755,6 @@ void World::InvalidatePlayerDataToAllClient(ObjectGuid guid) const
     data << guid;
     SendGlobalMessage(data);
 }
-
-// Dungeonfinder
-/*void World::setDisabledMapIdForDungeonFinder(const char* mapIds)
-{
-    disabledMapIdForDungeonFinder.clear();
-    Tokens disabledMapId = StrSplit(mapIds, ",");
-    //Tokens disabledMapId(mapIds, ',');
-    for (Tokens::iterator it = disabledMapId.begin(); it != disabledMapId.end(); ++it)
-    {
-        disabledMapIdForDungeonFinder.insert(stoi(*it));
-    }
-}*/
 
 // Dungeonfinder
 void World::setDisabledMapIdForDungeonFinder(const char* mapIds)

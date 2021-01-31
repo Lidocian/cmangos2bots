@@ -216,16 +216,16 @@ public:
     void CleanupRoleChecks(LFGType type);
     void StartRoleCheck(Group* pGroup);
     void UpdateRoleCheck(Group* pGroup);
-    bool CheckRoles(Group* pGroup, Player* pPlayer = NULL);
+    bool CheckRoles(Group* pGroup, Player* pPlayer = nullptr);
     bool CheckRoles(LFGRolesMap& roleMap);
     bool RoleChanged(Player* pPlayer, LFGRoleMask roles);
-    void SetGroupRoles(Group* pGroup, GuidSet* = NULL);
+    void SetGroupRoles(Group* pGroup, GuidSet* = nullptr);
     bool SetRoles(LFGRolesMap& roleMap);
 
     // Social check system
     bool HasIgnoreState(ObjectGuid guid1, ObjectGuid guid2);
     bool HasIgnoreState(Group* pGroup, ObjectGuid guid);
-    bool CheckTeam(Group* pGroup, Player* pPlayer = NULL);
+    bool CheckTeam(Group* pGroup, Player* pPlayer = nullptr);
     bool CheckTeam(ObjectGuid guid1, ObjectGuid guid2);
 
     // Dungeon operations

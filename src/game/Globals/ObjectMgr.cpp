@@ -3943,8 +3943,8 @@ void ObjectMgr::LoadGroups()
     // -- loading groups --
     uint32 count = 0;
     //                                                    0         1              2           3           4              5      6      7      8      9      10     11     12     13         14          15              16          17
-    QueryResult* result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, groupType, difficulty, raiddifficulty, leaderGuid, groupId FROM `groups`");
-
+    //QueryResult* result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, groupType, difficulty, raiddifficulty, leaderGuid, groupId FROM `groups`");
+    QueryResult* result = CharacterDatabase.Query("SELECT  lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, groupType, difficulty, raiddifficulty, leaderGuid, groupId FROM `groups`");
     if (!result)
     {
         BarGoLink bar(1);
@@ -3961,7 +3961,7 @@ void ObjectMgr::LoadGroups()
         bar.step();
         Field* fields = result->Fetch();
         ++count;
-        Group* group = new Group;
+        Group* group = new Group(GROUPTYPE_NORMAL);
         if (!group->LoadGroupFromDB(fields))
         {
             group->Disband();
@@ -3979,8 +3979,8 @@ void ObjectMgr::LoadGroups()
 
     // -- loading members --
     count = 0;
-    //                                       0           1          2         3
-    result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, groupId FROM group_member ORDER BY groupId");
+    //                                       0           1          2         3     4
+    result = CharacterDatabase.Query("SELECT memberGuid, memberFlags, subgroup, groupId, roles FROM group_member ORDER BY groupId");
     if (!result)
     {
         BarGoLink bar2(1);
@@ -3999,7 +3999,8 @@ void ObjectMgr::LoadGroups()
 
             uint32 memberGuidlow = fields[0].GetUInt32();
             ObjectGuid memberGuid = ObjectGuid(HIGHGUID_PLAYER, memberGuidlow);
-            bool   assistent     = fields[1].GetBool();
+            //bool   assistent     = fields[1].GetBool();
+            uint8  flags = fields[1].GetUInt8();
             uint8  subgroup      = fields[2].GetUInt8();
             uint32 groupId       = fields[3].GetUInt32();
             uint8  roles         = fields[4].GetUInt8();
@@ -4015,7 +4016,7 @@ void ObjectMgr::LoadGroups()
                 }
             }
 
-            if (!group->LoadMemberFromDB(memberGuidlow, subgroup, assistent, LFGRoleMask(roles)))
+            if (!group->LoadMemberFromDB(memberGuidlow, subgroup, GroupFlagMask(flags), LFGRoleMask(roles)))
             {
                 sLog.outErrorDb("Incorrect entry in group_member table : member %s cannot be added to group (Id: %u)!",
                                 memberGuid.GetString().c_str(), groupId);

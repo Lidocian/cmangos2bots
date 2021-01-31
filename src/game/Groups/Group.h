@@ -73,11 +73,39 @@ enum GroupType                                              // group type flags?
     GROUPTYPE_UNK2 = 0x10,
 };
 
+enum GroupFlags
+{
+    GROUP_FLAG_ASSISTANT = 0,
+    GROUP_FLAG_MAIN_ASSISTANT = 1,
+    GROUP_FLAG_MAIN_TANK = 2,
+};
+
 enum GroupFlagMask
 {
+    GROUP_MEMBER = 0x00,
     GROUP_ASSISTANT      = 0x01,
     GROUP_MAIN_ASSISTANT = 0x02,
     GROUP_MAIN_TANK      = 0x04,
+    // unions
+    GROUP_MEMBER_AMT = (GROUP_ASSISTANT |
+    GROUP_MAIN_ASSISTANT |
+        GROUP_MAIN_TANK),
+
+    GROUP_MEMBER_AT = (GROUP_ASSISTANT |
+        GROUP_MAIN_TANK),
+
+    GROUP_MEMBER_AM = (GROUP_ASSISTANT |
+        GROUP_MAIN_ASSISTANT),
+
+    GROUP_MEMBER_MT = (GROUP_MAIN_ASSISTANT |
+        GROUP_MAIN_TANK),
+};
+
+enum GroupFlagsAssignment
+{
+    GROUP_ASSIGN_MAINASSIST = 0,
+    GROUP_ASSIGN_MAINTANK = 1,
+    GROUP_ASSIGN_ASSISTANT = 2,
 };
 
 enum GroupUpdateFlags
@@ -130,7 +158,8 @@ class Group
             ObjectGuid  guid;
             std::string name;
             uint8       group;
-            bool        assistant;
+            //bool        assistant;
+            GroupFlagMask  flags;
             LFGRoleMask roles;
             uint32      lastMap;
         };
@@ -143,13 +172,15 @@ class Group
         typedef std::set<Player*> InvitesList;
 
     public:
-        Group();
+        //Group();
+        Group(GroupType type);
         ~Group();
 
         // group manipulation methods
         bool   Create(ObjectGuid guid, const char* name);
         bool   LoadGroupFromDB(Field* fields);
-        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFGRoleMask roles);
+        //bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFGRoleMask roles);
+        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, GroupFlagMask flags, LFGRoleMask roles);
         bool   AddInvite(Player* player);
         uint32 RemoveInvite(Player* player);
         void   RemoveAllInvites();
@@ -157,13 +188,18 @@ class Group
         bool   AddMember(ObjectGuid guid, const char* name);
         uint32 RemoveMember(ObjectGuid guid, uint8 method); // method: 0=just remove, 1=kick
         void   ChangeLeader(ObjectGuid guid);
+        void CheckLeader(ObjectGuid const& guid, bool logout);
+        bool ChangeLeaderToFirstSuitableMember(bool onlySet = false);
         void   Disband(bool hideDestroy = false);
 
         // properties accessories
-        uint32 GetId() const { return m_Id; }
-        ObjectGuid GetObjectGuid() const { return ObjectGuid(HIGHGUID_GROUP, GetId()); }
+        ObjectGuid GetObjectGuid() const { return m_Guid; }
+        uint32 GetId() const { return m_Guid.GetCounter(); }
+        //uint32 GetId() const { return m_Id; }
+        //ObjectGuid GetObjectGuid() const { return ObjectGuid(HIGHGUID_GROUP, GetId()); }
         std::string GetGuidStr() const { return GetObjectGuid().GetString(); }
-        bool IsFull() const { return (m_groupType == GROUPTYPE_NORMAL) ? (m_memberSlots.size() >= MAX_GROUP_SIZE) : (m_memberSlots.size() >= MAX_RAID_SIZE); }
+        //bool IsFull() const { return (m_groupType == GROUPTYPE_NORMAL) ? (m_memberSlots.size() >= MAX_GROUP_SIZE) : (m_memberSlots.size() >= MAX_RAID_SIZE); }
+        bool IsFull() const { return (m_groupType == GROUPTYPE_NORMAL || isLFGGroup()) ? (m_memberSlots.size() >= MAX_GROUP_SIZE) : (m_memberSlots.size() >= MAX_RAID_SIZE); }
         bool isRaidGroup() const { return (m_groupType & GROUPTYPE_RAID) != 0; }
         bool isBattleGroup() const { return m_bgGroup != nullptr || m_bfGroup != nullptr; }
         bool IsCreated()   const { return GetMembersCount() > 0; }
@@ -181,14 +217,29 @@ class Group
 
             return ObjectGuid();
         }
-        bool IsAssistant(ObjectGuid guid) const
+        /*bool IsAssistant(ObjectGuid guid) const
         {
             member_citerator mslot = _getMemberCSlot(guid);
             if (mslot == m_memberSlots.end())
                 return false;
 
             return mslot->assistant;
+        }*/
+        bool IsGroupRole(ObjectGuid const& guid, GroupFlagMask role) const
+        {
+            member_citerator mslot = _getMemberCSlot(guid);
+            if (mslot == m_memberSlots.end())
+                return false;
+
+            if (role == GROUP_MEMBER)
+                return true;
+            else
+                return mslot->flags & role;
         }
+        bool IsMainAssistant(ObjectGuid const& guid) const { return IsGroupRole(guid, GROUP_MAIN_ASSISTANT); }
+        bool IsMainTank(ObjectGuid const& guid) const { return IsGroupRole(guid, GROUP_MAIN_TANK); }
+        bool IsAssistant(ObjectGuid const& guid) const { return IsGroupRole(guid, GROUP_ASSISTANT); }
+        Player* GetMemberWithRole(GroupFlagMask role);
         Player* GetInvited(ObjectGuid guid) const;
         Player* GetInvited(const std::string& name) const;
 
@@ -224,11 +275,12 @@ class Group
 
         void ChangeMembersGroup(ObjectGuid guid, uint8 group);
         void ChangeMembersGroup(Player* player, uint8 group);
+        void SetGroupUniqueFlag(ObjectGuid guid, GroupFlagsAssignment assignment, uint8 apply);
 
         ObjectGuid GetMainTankGuid() const { return m_mainTankGuid; }
         ObjectGuid GetMainAssistantGuid() const { return m_mainAssistantGuid; }
 
-        void SetAssistant(ObjectGuid guid, bool state)
+       /* void SetAssistant(ObjectGuid guid, bool state)
         {
             if (!isRaidGroup())
                 return;
@@ -250,7 +302,7 @@ class Group
 
             if (_setMainAssistant(guid))
                 SendUpdate();
-        }
+        }*/
 
         void SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid);
 
@@ -311,8 +363,9 @@ class Group
 #endif
 
     protected:
-        bool _addMember(ObjectGuid guid, const char* name, bool isAssistant = false);
-        bool _addMember(ObjectGuid guid, const char* name, bool isAssistant, uint8 group);
+        //bool _addMember(ObjectGuid guid, const char* name, bool isAssistant = false);
+        bool _addMember(ObjectGuid guid, const char* name);
+        bool _addMember(ObjectGuid guid, const char* name, uint8 group, GroupFlagMask flags = GROUP_MEMBER, LFGRoleMask roles = LFG_ROLE_MASK_NONE);
         bool _removeMember(ObjectGuid guid);                // returns true if leader has changed
         void _chooseLeader(bool offline = false);
         void _setLeader(ObjectGuid guid);
@@ -370,7 +423,7 @@ class Group
 
         uint32 GetMaxSkillValueForGroup(SkillType skill);
 
-        GroupFlagMask GetFlags(MemberSlot const& slot) const
+        /*GroupFlagMask GetFlags(MemberSlot const& slot) const
         {
             uint8 flags = 0;
             if (slot.assistant)
@@ -380,8 +433,9 @@ class Group
             if (slot.guid == m_mainTankGuid)
                 flags |= GROUP_MAIN_TANK;
             return GroupFlagMask(flags);
-        }
-        uint32              m_Id;                           // 0 for not created or BG groups
+        }*/
+        //uint32              m_Id;                           // 0 for not created or BG groups
+        ObjectGuid          m_Guid;
         MemberSlotList      m_memberSlots;
         GroupRefManager     m_memberMgr;
         InvitesList         m_invitees;
@@ -402,5 +456,6 @@ class Group
         ObjectGuid          m_currentLooterGuid;
         BoundInstancesMap   m_boundInstances[MAX_DIFFICULTY];
         uint8*              m_subGroupsCounts;
+        uint32              m_Difficulty;
 };
 #endif

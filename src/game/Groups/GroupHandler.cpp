@@ -55,7 +55,8 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
 
 void WorldSession::SendGroupInvite(Player* player, bool alreadyInGroup /*= false*/) const
 {
-    WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
+    //WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
+    WorldPacket data(SMSG_GROUP_INVITE, 58);                // guess size
     data << uint8(alreadyInGroup ? 0 : 1);                  // invited/already in group flag
     data << GetPlayer()->GetName();                         // max len 48
     data << uint32(0);                                      // unk
@@ -168,7 +169,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     // at least one person joins
     if (!initiatorGroup)
     {
-        initiatorGroup = new Group();
+        initiatorGroup = new Group(GROUPTYPE_NORMAL);
         // new group: if can't add then delete
         if (!initiatorGroup->AddLeaderInvite(initiator))
         {
@@ -195,10 +196,10 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     SendPartyResult(PARTY_OP_INVITE, membername, ERR_PARTY_RESULT_OK);
 }
 
-void WorldSession::HandleGroupAcceptOpcode(WorldPacket& /*recv_data*/)
+void WorldSession::HandleGroupAcceptOpcode(WorldPacket& recv_data)
 {
     // Playerbot mod
-    //recv_data.read_skip<uint32>();                          // roles mask?
+    recv_data.read_skip<uint32>();                          // roles mask?
 
     Group* group = GetPlayer()->GetGroupInvite();
     if (!group)
@@ -545,13 +546,15 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recv_data)
 void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket& recv_data)
 {
     ObjectGuid guid;
-    uint8 flag;
+    uint8 apply;
     recv_data >> guid;
-    recv_data >> flag;
+    recv_data >> apply;
 
     Group* group = GetPlayer()->GetGroup();
-    if (!group)
+
+    if (!group || !group->isRaidGroup())                    // Only raid groups may have assistant
         return;
+
 
     /** error handling **/
     if (!group->IsLeader(GetPlayer()->GetObjectGuid()))
@@ -559,7 +562,7 @@ void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket& recv_data)
     /********************/
 
     // everything is fine, do it
-    group->SetAssistant(guid, (flag != 0));
+    group->SetGroupUniqueFlag(guid, GROUP_ASSIGN_ASSISTANT, apply);
 }
 
 void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recv_data)
@@ -570,16 +573,26 @@ void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recv_data)
     recv_data >> role >> apply;                             // role 0 = Main Tank, 1 = Main Assistant
     recv_data >> guid;
 
-    DEBUG_LOG("MSG_PARTY_ASSIGNMENT");
+    DEBUG_LOG("MSG_PARTY_ASSIGNMENT: guid %u, role %u, apply %u", guid.GetCounter(), role, apply);
 
     Group* group = GetPlayer()->GetGroup();
-    if (!group)
+
+    if (!group || !group->isRaidGroup())                    // Only raid groups may have mainassistant/maintank
         return;
 
     /** error handling **/
-    if (!group->IsLeader(GetPlayer()->GetObjectGuid()))
+    if (!group->IsLeader(GetPlayer()->GetObjectGuid()) && !group->IsAssistant(GetPlayer()->GetObjectGuid()))
         return;
     /********************/
+
+    group->SetGroupUniqueFlag(guid, GroupFlagsAssignment(role), apply);
+ /*   if (!group)
+        return;
+
+    //error handling 
+    if (!group->IsLeader(GetPlayer()->GetObjectGuid()))
+        return;
+    
 
     // everything is fine, do it
     if (apply)
@@ -597,7 +610,7 @@ void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recv_data)
             group->SetMainTank(ObjectGuid());
         if (group->GetMainAssistantGuid() == guid)
             group->SetMainAssistant(ObjectGuid());
-    }
+    }*/
 }
 
 void WorldSession::HandleRaidReadyCheckOpcode(WorldPacket& recv_data)
@@ -811,7 +824,8 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recv_data)
     Player* player = ObjectAccessor::FindPlayer(guid, false);
     if (!player)
     {
-        WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3 + 4 + 2);
+        //WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3 + 4 + 2);
+        WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 1 + 8 + 4 + 2);
         data << uint8(0);                                   // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
         data << guid.WriteAsPacked();
         data << uint32(GROUP_UPDATE_FLAG_STATUS);

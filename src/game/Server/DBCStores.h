@@ -63,7 +63,7 @@ bool MapCoordinateVsZoneCheck(float x, float y, uint32 mapid, uint32 zone);
 bool Zone2MapCoordinates(float& x, float& y, uint32 zone);
 bool Map2ZoneCoordinates(float& x, float& y, uint32 zone);
 
-typedef std::map<uint32/* pair32(dungeonId,expansion) */, LFGDungeonExpansionEntry const*> LFGDungeonExpansionMap;
+typedef std::unordered_map<uint32/* pair32(dungeonId,expansion) */, LFGDungeonExpansionEntry const*> LFGDungeonExpansionMap;
 LFGDungeonExpansionEntry const* GetLFGExpansionEntry(uint32 dungeonId, uint32 expansion);
 
 typedef std::map<uint32/*pair32(map,diff)*/, MapDifficultyEntry const*> MapDifficultyMap;

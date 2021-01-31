@@ -52,6 +52,9 @@ LFGMgr::LFGMgr()
     m_LFRupdateTimer.Reset();
     m_LFGQueueUpdateTimer.SetInterval(LFG_QUEUEUPDATE_INTERVAL);
     m_LFGQueueUpdateTimer.Reset();
+
+    for (LFGStatesMap::iterator itr = m_statesMap.begin(); itr != m_statesMap.end(); ++itr)
+        delete itr->second;
 }
 
 LFGMgr::~LFGMgr()
@@ -1363,7 +1366,7 @@ void LFGMgr::UpdateProposal(uint32 ID, ObjectGuid guid, bool accept)
         leader->GetSession()->SendLfgUpdatePlayer(LFG_UPDATETYPE_GROUP_FOUND, GetLFGPlayerState(leader->GetObjectGuid())->GetType());
         GetLFGPlayerState(leader->GetObjectGuid())->AddRole(ROLE_LEADER);
 
-        pGroup = new Group;
+        pGroup = new Group(GROUPTYPE_NORMAL);
         pGroup->Create(leader->GetObjectGuid(), leader->GetName());
         pGroup->ConvertToLFG(pProposal->GetType());
 
@@ -1857,6 +1860,7 @@ void LFGMgr::Teleport(Player* pPlayer, bool out, bool fromOpcode /*= false*/)
             x = at->target_X;
             y = at->target_Y;
             z = at->target_Z;
+            orientation = at->target_Orientation;
         }
         else
         {
@@ -1869,7 +1873,7 @@ void LFGMgr::Teleport(Player* pPlayer, bool out, bool fromOpcode /*= false*/)
     {
 
         if (pPlayer->GetMap() && !pPlayer->GetMap()->IsDungeon() && !pPlayer->GetMap()->IsRaid() && !pPlayer->InBattleGround())
-            pPlayer->SetBattleGroundEntryPoint();
+            pPlayer->SetBattleGroundEntryPoint(true);
 
         // stop taxi flight at port
         if (pPlayer->IsTaxiFlying())
